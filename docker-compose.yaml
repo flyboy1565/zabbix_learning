@@ -1,0 +1,61 @@
+version: "3.5"
+
+services:
+  sql:
+     image: mysql:latest
+     environment:
+       MYSQL_ROOT_PASSWORD: zabbix
+       MYSQL_DB: zabbix
+       MYSQL_USER: zabbix
+       MYSQL_PASSWORD: zabbix
+     volumes:
+      - ./zabbix-mysql:/home/mysql
+     restart: always
+
+  zabbix:
+     image: zabbix/zabbix-server-mysql
+     environment:
+          DB_SERVER_HOST: sql
+          MYSQL_DB: zabbix
+          MYSQL_USER: root
+          MYSQL_PASSWORD: zabbix
+          ZBX_VALUECACHESIZE: 64M
+          ZBX_CACHESIZE: 128M
+          ZBX_TRENDCACHESIZE: 128M
+     volumes:
+      - ./zabbix-serv:/home/zabbix-server
+     restart: always
+     depends_on:
+       - sql
+    
+  zabbix-web:
+     image:  zabbix/zabbix-web-apache-mysql
+     environment:
+        DB_SERVER_HOST: sql
+        MYSQL_USER: root
+        MYSQL_PASSWORD: zabbix
+        MYSQL_DB: zabbix
+        ZBX_SERVER_HOST: zabbix
+        ZBX_SERVER_PORT: 10051
+        PHP_TZ: Europe/Paris
+     ports:
+      - "8999:8080"
+     restart: always
+     depends_on:
+       - zabbix-agent
+
+  zabbix-agent:
+     image:  zabbix/zabbix-agent
+     environment:
+        DB_SERVER_HOST: sql
+        MYSQL_USER: root
+        MYSQL_PASSWORD: zabbix
+        MYSQL_DB: zabbix
+        ZBX_SERVER_PORT: 10051
+        ZBX_SERVER_HOST: zabbix
+     restart: always
+     depends_on:
+       - zabbix
+
+   webapp:
+      
