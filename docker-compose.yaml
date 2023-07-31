@@ -4,6 +4,10 @@ services:
    webapp:
       build: "webapp/"
       ports: [5000]
+      volumes: ['./webapp:/app']
+      environment:
+         FLASK_DEBUG: 1
+         FLASK_APP: ./app/app.py
 
    sql:
       image: mysql:latest

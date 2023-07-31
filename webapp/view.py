@@ -1,28 +1,47 @@
-from flask import Flask, render_template
-import os
+import flask
+from flask import request, jsonify
+from uuid import uuid4
 import json
 
-app = Flask(__name__)
+app = flask.Flask(__name__)
 
-TESTHOLDER = []
+# Create a list to store the todo items
+todos = {}
 
+def task_as_id(task):
+  return task.lower().replace(' ', '_')
 
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
-@app.route("/values/{value}")
-def endpoint1(value):
-    TESTHOLDER.append(value)
-    return json.dumps({"values": TESTHOLDER})
-
-
-@app.route("/values")
-def endpoint1():
-    return json.dumps({"values": TESTHOLDER})
+# Define the API endpoints
+@app.route('/todos', methods=['GET'])
+def get_todos():
+  """Get all the todo items."""
+  return todos
 
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host="0.0.0.0", port=port)
+@app.route('/todos/<task>', methods=['GET'])
+def get_todo(task):
+  """Get a todo item by its ID."""
+  return todos[task_as_id(task)]
+
+@app.route('/todos', methods=['POST'])
+def add_todo():
+  """Add a todo item."""
+  task = request.json['task']
+  todos[task_as_id(task)] = {'status': False}
+  return {'message': 'Todo item added successfully'}
+
+@app.route('/todos/<task>', methods=['PUT'])
+def update_todo(task):
+  """Update a todo item."""
+  status = request.json['status']
+  todos[task_as_id(task)]['status'] = status
+  return {'message': 'Todo item updated successfully'}
+
+@app.route('/todos/<task>', methods=['DELETE'])
+def delete_todo(task):
+  """Delete a todo item."""
+  todos.pop(task)
+  return {'message': 'Todo item deleted successfully'}
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000, host="0.0.0.0")
