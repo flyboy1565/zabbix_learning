@@ -9,6 +9,5 @@ RUN pip install -r requirements.txt
 
 COPY . /app/
 
-ENTRYPOINT [ "python" ]
 
-CMD [ "view.py" ]
+CMD ["litestar", "run", "--reload", "--host", "0.0.0.0"]
